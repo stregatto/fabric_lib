@@ -33,7 +33,9 @@ class Ping(object):
         if wait == None:
             wait = self.wait
         try:
-            subprocess.check_call([self.pingBinary, "-c 1", "-W %s" % wait,  hostname])
+            subprocess.check_call([self.pingBinary, "-c 1", "-W %s" % wait,  hostname],
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE)
             return self._returncode(0)
         except subprocess.CalledProcessError as e:
             return self._returncode(e.returncode)

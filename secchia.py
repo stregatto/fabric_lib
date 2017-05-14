@@ -1,5 +1,5 @@
 
-def separatedStringToList(my_string, s=','):
+def separated_string_to_list(my_string, s=','):
     '''
     This function accept a "s" separated string and transform it in a list
     remove also all spaces.

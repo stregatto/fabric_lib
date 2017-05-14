@@ -22,13 +22,13 @@ class EtcdTools(object):
     def __init__(self):
         return
 
-    def getNodesFromSRV(self, domain=None, dns_addresses=None):
+    def get_nodes_from_SRV(self, domain=None, dns_addresses=None):
         '''
         Returns an iterable object with the resoult... ore false for errors.
         '''
         resolver = dns.resolver.Resolver()
         if dns_addreses:
-            resolver.nameservers = secchia.separatedStringToList(dns_addresses)
+            resolver.nameservers = secchia.separated_string_to_list(dns_addresses)
         else:
             print("Using default dns resolver srevers.")
         if not domain:
@@ -42,11 +42,11 @@ class EtcdTools(object):
             return 1
         return answers
 
-    def isEtcdHostedOnHost(self, host, domain=None, dns_addresses=None):
+    def is_etcd_hosted_on_host(self, host, domain=None, dns_addresses=None):
         '''
         Return True if the host is in the SRV _etcd-server dns entry false in the other cases
         '''
-        answer = self.getNodesFromSRV(domain, dns_addresses)
+        answer = self.get_nodes_from_SRV(domain, dns_addresses)
         if host in str(answer.rrset):
             return True
         else:
@@ -57,4 +57,4 @@ class EtcdTools(object):
 # domain='mydomain.com'
 # dns_addresses = '10.10.10.10, 10.10.10.20'
 # host = 'mynode001'
-# print(etcdTools.isEtcdHostedOnHost(host, domain, dns_addresses))
+# print(etcdTools.is_etcd_hosted_on_host(host, domain, dns_addresses))

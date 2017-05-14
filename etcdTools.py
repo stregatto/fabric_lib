@@ -27,7 +27,7 @@ class EtcdTools(object):
         Returns an iterable object with the resoult... ore false for errors.
         '''
         resolver = dns.resolver.Resolver()
-        if dns_addreses:
+        if dns_addresses:
             resolver.nameservers = secchia.separated_string_to_list(dns_addresses)
         else:
             print("Using default dns resolver srevers.")

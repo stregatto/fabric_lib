@@ -1,6 +1,22 @@
 from fabric.api import *
 from fabric.utils import *
 from fabric.contrib import *
+from time import sleep
+import sys
+from converter import TimeConverter
+
+class FabricException (Exception):
+    pass
+
+
+class Pod(object):
+
+    def __init__(self, name, ready, status, restarts, age):
+        self.name = name
+        self.ready = ready
+        self.status = status
+        self.restarts = restarts
+        self.age = age
 
 
 class KubeManage(object):
@@ -54,11 +70,94 @@ class KubeManage(object):
         check_string = 'get node'
         cmd = self.kubectl + ' ' + check_string + ' ' + host + '|grep -v NAME'
         print(cmd)
-        # out = local(cmd)
-        out = 'SchedulingDisabled'
+        out = local(cmd, capture=True)
+        # out = 'SchedulingDisabled'
         if 'SchedulingDisabled' in out:
             return True
         return False
 
-# kubeManage = KubeManage('kubectl kubectl --context production')
-# kubeManage.is_node_rained('mynode001')
+    def get_namespaces(self):
+        '''
+        The function returns all namespaces
+        '''
+        check_string = 'get namespaces'
+        cmd = self.kubectl + ' ' + check_string
+        namespaces = []
+        out = local(cmd, capture=True).rsplit("\n")
+        for line in out:
+            if 'NAME' not in line:
+                namespaces.append(line.split(" ")[0])
+        return namespaces
+
+    def get_num_of_terminating_pod(self, namespace, sleeptime=0):
+        '''
+        The function returns the number of terminating pods.
+        Print . for everytime it founds terminating pods.
+        '''
+        num = 0
+        sleep(sleeptime)
+        sys.stdout.write(' ')
+        sys.stdout.flush()
+        pods = self.get_pod_for_namespace(namespace)
+        for pod in pods:
+            if 'Terminating' in pod.status:
+                sys.stdout.write('.')
+                sys.stdout.flush()
+                num += 1
+        return num
+
+    def get_num_of_creating_pod(self, namespace, sleeptime=0):
+        '''
+        The function returns the number of creating pods
+        a pod in creating state is a pod with number of container not equal to
+        the nuber of expected pods.
+        Print ^ for everytime it founds creating pods.
+        '''
+        num = 0
+        sleep(sleeptime)
+        sys.stdout.write(' ')
+        sys.stdout.flush()
+        pods = self.get_pod_for_namespace(namespace)
+        for pod in pods:
+            dockers, desidered = pod.ready.split('/')
+            if dockers != desidered and pod.status != 'Terminating':
+                sys.stdout.write('^')
+                sys.stdout.flush()
+                num += 1
+        return num
+
+    def get_pod_for_namespace(self, namespace, eldest='0s'):
+        '''
+        The function returns a list of all pods for a single namespace
+        '''
+        check_string = 'get pod --namespace %s' % namespace
+        cmd = self.kubectl + ' ' + check_string
+        eldest_in_seconds = TimeConverter(eldest).seconds
+        with hide('output', 'running', 'warnings'), settings(warn_only=True):
+            out = local(cmd, capture=True).rsplit("\n")
+        pods = []
+        for line in out:
+            if 'NAME' not in line:
+                name = line.split()[0]
+                ready = line.split()[1]
+                status = line.split()[2]
+                restarts = line.split()[3]
+                age = line.split()[4]
+                age = TimeConverter(age).seconds
+                pod = Pod(name, ready, status, restarts, age)
+                if int(eldest_in_seconds) <= int(pod.age):
+                    pods.append(pod)
+        return pods
+
+    def delete_pod(self, pod, namespace):
+        '''
+        The function delete a pod in a namespace
+        '''
+        do_string = 'delete pod %s --namespace %s' % (pod, namespace)
+        cmd = self.kubectl + ' ' + do_string
+        out = local(cmd, capture=True).rsplit("\n")
+        return out
+
+
+# kubeManage = KubeManage('kubectl --context production')
+# kubeManage.get_namespaces()

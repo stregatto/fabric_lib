@@ -1,13 +1,14 @@
 import subprocess
 from time import sleep
 
+
 class Ping(object):
 
     values = {
-        0: {'text':'alive', 'status': True},
-        2: {'text':'not reachable', 'status':False},
-        68: {'text':'unknown host', 'status':False}
-        }
+        0: {'text': 'alive', 'status': True},
+        2: {'text': 'not reachable', 'status': False},
+        68: {'text': 'unknown host', 'status': False}
+    }
 
     def __init__(self, **kwargs):
         '''
@@ -20,7 +21,7 @@ class Ping(object):
         try:
             return self.values[int(exitcode)]
         except KeyError as e:
-            return {'text':'unknown exit code: %s' % e, 'status':False}
+            return {'text': 'unknown exit code: %s' % e, 'status': False}
 
     def check_host(self, hostname, wait=None):
         '''
@@ -58,6 +59,9 @@ class Ping(object):
                 return True
             sleep(1)
 
+# Personal preference: I'd avoid using self._returncode as it makes the
+# code more cumbersome: just manage the exit codes maybe defining some
+# constants
 
 # ping = Ping()
 # ping.check_until_down('ubuntu16')

@@ -62,6 +62,24 @@ class KubeManage(object):
             print('Something goes wrong during uncordon ERROR: %s' % out)
             return False
 
+    def uncordonServer(self, host, isamaster):
+        '''
+        The function uncordon the node, if the command exit with uncordoned.
+        Expect host and isamaster.
+        Do nothing if it's a master
+        '''
+        if not isamaster:
+            if self.uncordon(host):
+                print('Node uncordoned')
+                return True
+            else:
+                print("I'll exit before make errors! Please check the node: %s" % host)
+                sys.exit()
+                return False
+        else:
+            print('Uncordon not needed')
+            return True
+
     def is_node_drained(self, host):
         '''
         The function check if the node is in "SchedulingDisabled", it returns True

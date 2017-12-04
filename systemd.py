@@ -20,11 +20,10 @@ class Systemd(object):
         with settings(abort_exception=FabricException):
             try:
                 run(cmd)
-                result = True
             except FabricException as e:
                 print('starting %s failed with error %s' % (package, e))
-                result = False
-        return result
+                sys.exit()
+        return True
 
     def restart(self, package):
         cmd = 'sudo systemctl restart %(package)s' % {'package': package}

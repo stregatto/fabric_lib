@@ -1,4 +1,19 @@
 import datetime
+import time
+
+
+def is_date_after_now(date):
+    '''
+    This function accept a date in format 2018-02-08T14:08:01
+    and return true if the date is after .now()
+    '''
+    for char in ['-', 'T']:
+        date = date.replace(char, ':')
+    date_epoch = time.mktime(time.strptime(date, '%Y:%m:%d:%H:%M:%S'))
+    now_epoch = time.mktime(datetime.datetime.now().timetuple())
+    if date_epoch > now_epoch:
+        return True
+    return False
 
 
 def separated_string_to_list(my_string, s=','):

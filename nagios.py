@@ -40,7 +40,7 @@ class Nagios(object):
         self.url = 'http://' + self.server + self.uri
         return
 
-    def _set_data_downtime_(self, host, start_time, end_time, what, domain=None):
+    def _set_data_downtime_(self, host, start_time, end_time, what, comment='Set downtime for maintenace', domain=None):
         if domain:
             host = host + '.' + domain
         # change the cmd_typ if you need to stop also the server or not
@@ -54,7 +54,7 @@ class Nagios(object):
         data = {'cmd_typ': int(cmd_typ),
                 'cmd_mod': 2,
                 'host': host,
-                'com_data': 'Updating+application',
+                'com_data': comment,
                 'trigger': 0,
                 'start_time': start_time,
                 'end_time': end_time,
@@ -65,14 +65,14 @@ class Nagios(object):
                 }
         return data
 
-    def _set_data_check_(self, host, start_time, domain=None):
+    def _set_data_check_(self, host, start_time, domain=None, comment='Set downtime for maintenace'):
         if domain:
             host = host + '.' + domain
         # change the cmd_typ if you need to stop also the server or not
         data = {'cmd_typ': 96,
                 'cmd_mod': 2,
                 'host': host,
-                'com_data': 'Updating+application',
+                'com_data': comment,
                 'trigger': 0,
                 'start_time': start_time,
                 'force_check': 1
@@ -105,12 +105,15 @@ class Nagios(object):
         else:
             print('ERROR: Check problem for %s' % host)
 
-    def set_downtime(self, host, start_time, end_time, what):
+    def set_downtime(self, host, start_time, end_time, what, comment):
+        if not secchia.is_date_after_now(start_time) or not secchia.is_date_after_now(end_time):
+            print('ERROR: The start_time or end_time is before now() %s' % host)
+            return
         if what == 'host' or what == 'services':
-            self._set_downtime_(host, start_time, end_time, what)
+            self._set_downtime_(host, start_time, end_time, what, comment)
         elif what == 'both':
-            self._set_downtime_(host, start_time, end_time, 'services')
-            self._set_downtime_(host, start_time, end_time, 'host')
+            self._set_downtime_(host, start_time, end_time, 'services', comment)
+            self._set_downtime_(host, start_time, end_time, 'host', comment)
         else:
             print('ERROR: No what is specified for %s' % host)
 
@@ -122,8 +125,8 @@ class Nagios(object):
         start_time = str(secchia.chop_seconds_microseconds(now))
         self.set_downtime(host, start_time, end_time, what)
 
-    def _set_downtime_(self, host, start_time, end_time, what):
-        data = self._set_data_downtime_(host, start_time, end_time, what)
+    def _set_downtime_(self, host, start_time, end_time, what, comment):
+        data = self._set_data_downtime_(host, start_time, end_time, what, comment)
         curl = Curl()
         response = curl.perform(self.url, data, self.username, self.password)
         if self._check_error_(response):
@@ -132,7 +135,7 @@ class Nagios(object):
             # I'm trying with the fqdn, because I'm not sure about the name of server
             if self.domain == '':
                 print('WARNING: domain is emplty, set APPLICATION_DOMAIN var')
-            data = self._set_data_downtime_(host, start_time, end_time, what, self.domain)
+            data = self._set_data_downtime_(host, start_time, end_time, what, comment, self.domain)
             response = curl.perform(self.url, data, self.username, self.password)
             if self._check_error_(response):
                 set_downtime = True

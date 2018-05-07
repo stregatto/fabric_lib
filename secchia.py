@@ -2,14 +2,15 @@ import datetime
 import time
 
 
-def is_date_after_now(date):
+def is_date_after_now(dt):
     '''
-    This function accept a date in format 2018-02-08T14:08:01
+    This function accepts a date in format 2018-02-08T14:08:01
     and return true if the date is after .now()
     '''
-    for char in ['-', 'T']:
-        date = date.replace(char, ':')
-    date_epoch = time.mktime(time.strptime(date, '%Y:%m:%d:%H:%M:%S'))
+    for char in ['-', 'T', ' ']:
+        dt = dt.replace(char, ':')
+    print(dt)
+    date_epoch = time.mktime(time.strptime(dt, '%Y:%m:%d:%H:%M:%S'))
     now_epoch = time.mktime(datetime.datetime.now().timetuple())
     if date_epoch > now_epoch:
         return True

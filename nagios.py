@@ -117,13 +117,16 @@ class Nagios(object):
         else:
             print('ERROR: No what is specified for %s' % host)
 
-    def set_relative_downtime(self, host, downtime, what='both'):
+    def set_relative_downtime(self, host, downtime, what='both', comment='Default downtime comment'):
+        '''
+         set relative downtime, secchia function accept data in format %Y-%m-%dT%H:%M:%S
+        '''
         now = datetime.datetime.now()
         end_time = secchia.chop_seconds_microseconds(secchia.add_minutes(now,
                                                                          downtime))
         end_time = str(end_time)
         start_time = str(secchia.chop_seconds_microseconds(now))
-        self.set_downtime(host, start_time, end_time, what)
+        self.set_downtime(host, start_time, end_time, what, comment)
 
     def _set_downtime_(self, host, start_time, end_time, what, comment):
         data = self._set_data_downtime_(host, start_time, end_time, what, comment)

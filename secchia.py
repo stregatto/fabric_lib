@@ -9,7 +9,6 @@ def is_date_after_now(dt):
     '''
     for char in ['-', 'T', ' ']:
         dt = dt.replace(char, ':')
-    print(dt)
     date_epoch = time.mktime(time.strptime(dt, '%Y:%m:%d:%H:%M:%S'))
     now_epoch = time.mktime(datetime.datetime.now().timetuple())
     if date_epoch > now_epoch:
